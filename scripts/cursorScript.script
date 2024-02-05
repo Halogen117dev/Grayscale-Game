@@ -1,0 +1,66 @@
+local gameStarted = false
+local clickedOnStart = false
+
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	print("cursor loaded")
+	self.mouse = vmath.vector3(0, 0, 0.25)
+	self.pressed = false
+end
+
+function update(self, dt)
+	local myPos = vmath.vector3(self.mouse.x, self.mouse.y, 0)
+	go.set_position(myPos)
+end
+
+function on_message(self, message_id, message, sender)
+	if (message_id == hash("collision_response")) and (message.other_group == hash("button")) then
+		if self.pressed and not clickedOnStart then
+			print("Button Clicked!!!" .. os.time())
+			clickedOnStart = true
+			sprite.play_flipbook("/buttonStart#sprite", hash("buttonRed"))
+			sprite.play_flipbook("/woman#sprite", hash("wakeUp"), animationDone)
+			
+			
+		end
+	end
+end
+
+function timerBS1(self, handle, time_elapsed)
+	go.animate("/controller#sprite", "tint.w", go.PLAYBACK_ONCE_FORWARD, 1.0, go.EASING_LINEAR, 3.0)
+	timer.delay(3.5, false, timerBS2)
+	go.animate("/helmetHolder", "position", go.PLAYBACK_ONCE_FORWARD, vmath.vector3(959, 750, 0.35), go.EASING_LINEAR, 2.5)
+end
+
+function timerBS2(self, handle, time_elapsed)
+	msg.post("/controller", "startGame")
+	msg.post(".", "release_input_focus")
+end
+
+
+function animationDone(self, message_id, message, sender)
+	if message_id == hash("animation_done") then
+		go.animate("/helmetHolder", "position", go.PLAYBACK_ONCE_FORWARD, vmath.vector3(959, 635, 0.35), go.EASING_LINEAR, 3.0)
+		go.animate("/helmet", "position", go.PLAYBACK_ONCE_FORWARD, vmath.vector3(963, 441, 0.25), go.EASING_LINEAR, 3.0)
+		timer.delay(3.3, false, timerBS1)
+		
+		
+	end
+end
+
+function on_input(self, action_id, action)
+	if action.pressed and action_id == hash("shoot") then
+		self.pressed = true
+	elseif action.released and action_id == hash("shoot") then
+		self.pressed = false
+	elseif not action_id then
+		self.mouse = action
+	end
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Learn more: https://defold.com/manuals/hot-reload/
+	-- Remove this function if not needed
+end

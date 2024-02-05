@@ -1,0 +1,18 @@
+function init(self)
+	go.set("#sprite", "tint.w", 0.0)
+end
+
+local function timerBS(self, handle, time_elapsed)
+	msg.post("loader:/loaderProxy", "unloadGameLevel")
+end
+
+local function timerBSYouDied(self, handle, time_elapsed)
+	go.set("#sprite", "tint.w", 1.0)
+	timer.delay(3, false, timerBS)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("gameOver") then
+		timer.delay(2, false, timerBSYouDied)
+	end
+end
